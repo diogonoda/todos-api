@@ -8,7 +8,16 @@ class TodosController < ApplicationController
 
   def create
     @todo = Todo.create!(todo_params)
-    json_response(@todo, :created)
+
+    if @todo.save
+      params[:item][:document_data].each do |file|
+        @todo.documents.create!(:document => file)
+      end
+
+      json_response(@todo, :created)
+    else
+      json(@todo.errors)
+    end
   end
 
   def show
@@ -27,7 +36,7 @@ class TodosController < ApplicationController
 
   private
     def todo_params
-      params.permit(:title, :created_by)
+      params.permit(:title, :created_by, :picture, :document_data => [])
     end
 
     def set_todo
